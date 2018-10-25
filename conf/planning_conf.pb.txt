@@ -1,0 +1,36 @@
+use_sim_time : true
+rrt_conf {
+    show_image : false
+    time_step : 0.5
+    k_voronoi : 1.0
+    k_goal : 5.0
+    max_attemp: 2000
+    step_size: 15
+    turn_on_prior: true
+    k_repulsive: 0.4
+    post_iteration: 200
+    record: true
+    record_path: "/Users/zhuoyang/Documents/du/origin_data/1025/"
+    uniform_sample: false
+    pivots_k: 12
+}
+vrep_conf {
+    resolutionX : 512
+    resolutionY : 512
+    minX : -10.0
+    maxX : 10.0
+    minY : -10.0
+    maxY : 10.0
+}
+goal {
+    row: 300
+    col: 20
+}
+map_from_file : true
+map_path : "/resources/map/map4.bmp"
+fake_state {
+    x: -8.0
+    y: 7.5
+    theta: 0
+}
+

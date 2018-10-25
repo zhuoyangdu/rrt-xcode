@@ -7,9 +7,13 @@
 //
 
 #include <iostream>
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
+#include "planner.h"
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
+    planning::Planner planner;
+    planner.Run();
     return 0;
 }

@@ -1,0 +1,50 @@
+syntax = "proto2";
+
+package planning;
+
+message RRTConf {
+    optional double time_step = 1;
+    optional double k_voronoi = 2;
+    optional double k_goal = 3;
+    optional bool show_image = 4;
+    optional int32 max_attemp = 5;
+    optional int32 step_size = 6;
+    optional bool turn_on_prior = 7;
+    optional double k_repulsive = 8;
+    optional int32 post_iteration = 9;
+    optional bool record = 10;
+    optional string record_path = 11;
+    optional bool uniform_sample = 12;
+    optional int32 pivots_k = 13;
+}
+
+message VrepConf {
+    optional int32 resolutionX = 1;
+    optional int32 resolutionY = 2;
+    optional double minX = 3;
+    optional double maxX = 4;
+    optional double minY = 5;
+    optional double maxY = 6;
+}
+
+message Goal {
+    optional double row = 1;
+    optional double col = 2;
+}
+
+message FakeState {
+    optional double x = 1;
+    optional double y = 2;
+    optional double theta = 3;
+}
+
+message PlanningConf {
+    optional bool use_sim_time = 1;
+    optional RRTConf rrt_conf = 2;
+    optional VrepConf vrep_conf = 3;
+    optional Goal goal = 4;
+    optional bool map_from_file = 5;
+    optional string map_path = 6;
+    optional FakeState fake_state = 7;
+
+}
