@@ -41,11 +41,6 @@ namespace planning {
         cv::Mat voronoi_prob    = environment->VoronoiAttractiveMap();
         cv::Mat attractive_prob = environment->AttractiveMap();
         
-        // grid_map_msgs::GridMap attractive_msg = ImageProc::ImageToGridMapMsg(
-        //                                         attractive_prob);
-        if (show_image_)
-            imshow("attractive", attractive_prob);
-        // pub_map_.publish(attractive_msg);
         ProbablisticMap probablistic_map(attractive_prob);
         
         Node init_node(int(init.x), int(init.y), vehicle_state.theta);
@@ -69,7 +64,7 @@ namespace planning {
         double t_collision = 0.0;
         
         int i = 0;
-        while (i < rrt_conf_.max_attemp()) {
+        while (i <= rrt_conf_.max_attemp()) {
             if ( i % 100 == 0) {
                 std::cout << "iteration " << i << " times."
                 " shortest_path_length:" << shortest_path_length_/512*20
@@ -144,15 +139,8 @@ namespace planning {
                     ImageProc::PlotPath(img_env, path, Scalar(0,0,255), 2);
                 }
                 double path_length = PathLength(path);
-                // std::cout << "A  path found" << path_length << "!" << std::endl;
                 if (shortest_path_length_==0 || shortest_path_length_ > path_length) {
                     std::cout << "A shorter path found!" << std::endl;
-                    //std::cout << "path length: " << path_length << std::endl;
-                    for (Node node : path) {
-                        //std::cout << "row: " << node.row() << ", col: " << node.col()
-                        //    << ", theta: " << node.theta() << ", id: " << node.index()
-                        //    << ", parent:" << node.parent_index() << std::endl;
-                    }
                     shortest_path_length_ = path_length;
                     vector<Node> spath = PostProcessing(path, environment);
                     shortest_spath_length_ = PathLength(spath);
@@ -431,7 +419,14 @@ namespace planning {
         '-'+int2string(now->tm_sec);
         
         std::string file_name = rrt_conf_.record_path()
-        + "/tree-" + time_s + ".txt";
+        + "/tree-" + time_s;
+        if (rrt_conf_.uniform_sample()) {
+            file_name += "-uniform-cost_" + std::to_string(shortest_path_length_/512*20) + ".txt";
+        } else {
+            file_name += "heuristic-cost_" + std::to_string(shortest_path_length_/512*20)
+                        + "-scost_" + std::to_string(shortest_spath_length_/512*20) + ".txt";
+        }
+        std::cout << "record file name:" << file_name << std::endl;
         std::ofstream out_file(file_name.c_str());
         if (!out_file) {
             std::cout << "no file!" << std::endl;

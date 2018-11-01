@@ -1,6 +1,6 @@
 use_sim_time : true
 rrt_conf {
-    show_image : false
+    show_image : true
     time_step : 0.5
     k_voronoi : 1.0
     k_goal : 5.0
@@ -23,13 +23,13 @@ vrep_conf {
     maxY : 10.0
 }
 goal {
-    row: 300
-    col: 20
+    row: 400
+    col: 200
 }
 map_from_file : true
-map_path : "/resources/map/map4.bmp"
+map_path : "/resources/map/map1.bmp"
 fake_state {
-    x: -8.0
+    x: -9
     y: 7.5
     theta: 0
 }

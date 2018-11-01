@@ -37,16 +37,9 @@ namespace planning {
         rangeY_.first  = planning_conf_.vrep_conf().miny();
         rangeY_.second = planning_conf_.vrep_conf().maxy();
         
-        //goal_.x = planning_conf_.goal().x();
-        //goal_.y = planning_conf_.goal().y();
-        //GetPixelCoord(goal_.x, goal_.y, &pixel_goal_.x, &pixel_goal_.y);
         pixel_goal_.x = planning_conf_.goal().row();
         pixel_goal_.y = planning_conf_.goal().col();
         is_init_ = true;
-        
-        // std::cout << "goal:" << goal_.x << ", " << goal_.y << std::endl;
-        // std::cout << "goal pixel:" << pixel_goal_.x << ", " << pixel_goal_.y << std::endl;
-        
     }
     
     void Environment::GetPixelCoord(double x, double y,

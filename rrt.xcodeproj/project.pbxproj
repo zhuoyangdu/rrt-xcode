@@ -59,6 +59,7 @@
 		5CB4772521808F580057AFE6 /* environment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4772321808F580057AFE6 /* environment.cpp */; };
 		5CB4772921808FCE0057AFE6 /* probablistic_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4772721808FCE0057AFE6 /* probablistic_map.cpp */; };
 		5CB4772E218187790057AFE6 /* planning_conf.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4772D218187790057AFE6 /* planning_conf.pb.cc */; };
+		5CB4B122218AE63100433D76 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4B121218AE63100433D76 /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -78,6 +79,15 @@
 
 /* Begin PBXCopyFilesBuildPhase section */
 		5CB4769721805A680057AFE6 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		5CB4B11D218AE63100433D76 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -155,6 +165,8 @@
 		5CB4772B218090620057AFE6 /* map */ = {isa = PBXFileReference; lastKnownFileType = folder; path = map; sourceTree = "<group>"; };
 		5CB4772C218187790057AFE6 /* planning_conf.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = planning_conf.pb.h; sourceTree = "<group>"; };
 		5CB4772D218187790057AFE6 /* planning_conf.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = planning_conf.pb.cc; sourceTree = "<group>"; };
+		5CB4B11F218AE63100433D76 /* multi-thread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "multi-thread"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CB4B121218AE63100433D76 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -210,6 +222,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5CB4B11C218AE63100433D76 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -221,6 +240,7 @@
 				5CB476F821805B460057AFE6 /* proto */,
 				5CB476A321805AF80057AFE6 /* opencv_frameworks */,
 				5CB4769B21805A680057AFE6 /* rrt */,
+				5CB4B120218AE63100433D76 /* multi-thread */,
 				5CB4769A21805A680057AFE6 /* Products */,
 				5CB4770C218083640057AFE6 /* Frameworks */,
 			);
@@ -230,6 +250,7 @@
 			isa = PBXGroup;
 			children = (
 				5CB4769921805A680057AFE6 /* rrt */,
+				5CB4B11F218AE63100433D76 /* multi-thread */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -357,6 +378,14 @@
 			path = resources;
 			sourceTree = "<group>";
 		};
+		5CB4B120218AE63100433D76 /* multi-thread */ = {
+			isa = PBXGroup;
+			children = (
+				5CB4B121218AE63100433D76 /* main.cpp */,
+			);
+			path = "multi-thread";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -378,6 +407,23 @@
 			productReference = 5CB4769921805A680057AFE6 /* rrt */;
 			productType = "com.apple.product-type.tool";
 		};
+		5CB4B11E218AE63100433D76 /* multi-thread */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5CB4B125218AE63100433D76 /* Build configuration list for PBXNativeTarget "multi-thread" */;
+			buildPhases = (
+				5CB4B11B218AE63100433D76 /* Sources */,
+				5CB4B11C218AE63100433D76 /* Frameworks */,
+				5CB4B11D218AE63100433D76 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "multi-thread";
+			productName = "multi-thread";
+			productReference = 5CB4B11F218AE63100433D76 /* multi-thread */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -388,6 +434,9 @@
 				ORGANIZATIONNAME = zhuoyang;
 				TargetAttributes = {
 					5CB4769821805A680057AFE6 = {
+						CreatedOnToolsVersion = 9.4.1;
+					};
+					5CB4B11E218AE63100433D76 = {
 						CreatedOnToolsVersion = 9.4.1;
 					};
 				};
@@ -405,6 +454,7 @@
 			projectRoot = "";
 			targets = (
 				5CB4769821805A680057AFE6 /* rrt */,
+				5CB4B11E218AE63100433D76 /* multi-thread */,
 			);
 		};
 /* End PBXProject section */
@@ -421,6 +471,14 @@
 				5CB4772E218187790057AFE6 /* planning_conf.pb.cc in Sources */,
 				5CB4772121808EB50057AFE6 /* heuristic_rrt.cpp in Sources */,
 				5CB47715218083BA0057AFE6 /* planner.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5CB4B11B218AE63100433D76 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CB4B122218AE63100433D76 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -574,6 +632,22 @@
 			};
 			name = Release;
 		};
+		5CB4B123218AE63100433D76 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		5CB4B124218AE63100433D76 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -591,6 +665,15 @@
 			buildConfigurations = (
 				5CB476A121805A680057AFE6 /* Debug */,
 				5CB476A221805A680057AFE6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5CB4B125218AE63100433D76 /* Build configuration list for PBXNativeTarget "multi-thread" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CB4B123218AE63100433D76 /* Debug */,
+				5CB4B124218AE63100433D76 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

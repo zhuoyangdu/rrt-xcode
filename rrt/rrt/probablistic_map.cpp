@@ -42,9 +42,7 @@ namespace planning {
         if (rand_sample <= prob_cumsum_[0]) return Node(0, 0);
         // std::cout << "rand_sample:" << rand_sample << ", sum:" << prob_sum_ << std::endl;
         int index = FindRandSection(rand_sample, 0, prob_cumsum_.size()-1);
-        // std::cout << "index:" << index << ", num: " << rand_sample
-        //     << ", 1: " << prob_cumsum_[index] << ", 2: " << prob_cumsum_[index+1] << std::endl;
-        
+
         int row = (index + 1) / attractive_prob_.cols;
         int col = (index + 1) - row * attractive_prob_.cols;
         row--; col--;
