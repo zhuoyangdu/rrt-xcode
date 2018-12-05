@@ -23,9 +23,11 @@ namespace planning {
     
     class ProbablisticMap {
     public:
+        ProbablisticMap() {}
+        
         explicit ProbablisticMap(const cv::Mat& attractive_prob);
         
-        Node Sampling();
+        Node Sampling() const;
         
     private:
         cv::Mat attractive_prob_;
@@ -34,7 +36,7 @@ namespace planning {
         
         void InitMap();
         
-        int FindRandSection(int num, int lower, int upper);
+        int FindRandSection(int num, int lower, int upper) const;
         
     };
     

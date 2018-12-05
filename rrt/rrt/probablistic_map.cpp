@@ -8,6 +8,7 @@
 
 #include "probablistic_map.h"
 #include <random>
+#include "../common/timer.h"
 
 using namespace std;
 
@@ -20,6 +21,7 @@ namespace planning {
     
     void ProbablisticMap::InitMap() {
         vector<int> prob_vector;
+        prob_vector.reserve(attractive_prob_.rows * attractive_prob_.cols);
         for (int i = 0; i < attractive_prob_.rows; ++i) {
             for (int j = 0; j < attractive_prob_.cols; ++j) {
                 prob_vector.push_back(attractive_prob_.at<uchar>(i, j));
@@ -27,6 +29,7 @@ namespace planning {
         }
         
         vector<int> prob_cumsum;
+        prob_cumsum.reserve(prob_vector.size());
         int sum = 0;
         for (int prob : prob_vector) {
             sum += prob;
@@ -37,10 +40,9 @@ namespace planning {
         prob_cumsum_ = prob_cumsum;
     }
     
-    Node ProbablisticMap::Sampling() {
+    Node ProbablisticMap::Sampling() const {
         int rand_sample = int((double) rand() / RAND_MAX * prob_sum_);
         if (rand_sample <= prob_cumsum_[0]) return Node(0, 0);
-        // std::cout << "rand_sample:" << rand_sample << ", sum:" << prob_sum_ << std::endl;
         int index = FindRandSection(rand_sample, 0, prob_cumsum_.size()-1);
 
         int row = (index + 1) / attractive_prob_.cols;
@@ -52,7 +54,7 @@ namespace planning {
         return Node(row, col);
     }
     
-    int ProbablisticMap::FindRandSection(int num, int lower, int upper) {
+    int ProbablisticMap::FindRandSection(int num, int lower, int upper) const {
         if (lower == upper) return upper;
         if (lower + 1 == upper) return upper;
         int mid = int((lower + upper) / 2);

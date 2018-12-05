@@ -21,8 +21,10 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "../rrt/node.h"
+#include "../common/timer.h"
 
 using namespace cv;
+using namespace std;
 
 namespace planning {
     class ImageProc {
@@ -77,6 +79,32 @@ namespace planning {
                              const std::vector<double> y,
                              const cv::Scalar& scalar,
                              double thickness);
+        
+        static void DrawDelaunay(Mat& img, Subdiv2D& subdiv, Scalar delaunay_color);
+        
+        //Draw voronoi diagram
+        static void DrawVoronoi(Mat* img, Subdiv2D& subdiv )
+        {
+            vector<vector<Point2f> > facets;
+            vector<Point2f> centers;
+            subdiv.getVoronoiFacetList(vector<int>(), facets, centers);
+            
+            vector<Point> ifacet;
+            vector<vector<Point> > ifacets(1);
+            
+            for( size_t i = 0; i < facets.size(); i++ )
+            {
+                ifacet.resize(facets[i].size());
+                for( size_t j = 0; j < facets[i].size(); j++ )
+                    ifacet[j] = facets[i][j];
+                
+                Scalar color(i);
+                fillConvexPoly(*img, ifacet, color, 8, 0);
+            }
+        }
+        
+        static std::vector<Point> PaintVertex(const cv::Mat &origin_image,
+                                              cv::Mat* image);
     };
 }  // namespace planning
 #endif  // SRC_PLANNING_SRC_COMMON_IMAGE_PROC_H_

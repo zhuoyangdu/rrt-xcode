@@ -9,6 +9,7 @@
 // Copyright [2018] <Zhuoyang Du>
 
 #include "environment.h"
+#include <thread>
 
 namespace planning {
     
@@ -18,12 +19,15 @@ namespace planning {
         InitParams();
         map_static_ = image;
         map_dynamic_ = map_static_;
-        GenerateAttractiveProbMap();
         
-        ImageProc::GetObstacleRepulsiveField(map_static_,
-                                             &repulsive_filed_x_,
-                                             &repulsive_filed_y_);
-        
+        std::thread thread1(&Environment::GenerateAttractiveProbMap, this);
+        std::thread thread2(ImageProc::GetObstacleRepulsiveField,
+                            map_static_,
+                            &repulsive_filed_x_,
+                            &repulsive_filed_y_);
+        thread1.join();
+        thread2.join();
+
         Mat element = cv::getStructuringElement(MORPH_RECT, Size(10, 10));
         erode(map_static_, dilate_map_, element);
         

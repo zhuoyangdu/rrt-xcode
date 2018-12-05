@@ -60,7 +60,7 @@ namespace planning {
         
         cv::Mat RepulsiveY() const { return repulsive_filed_y_; }
         
-        Node Goal() {
+        Node Goal() const {
             return Node(int(pixel_goal_.x), int(pixel_goal_.y));
         }
         

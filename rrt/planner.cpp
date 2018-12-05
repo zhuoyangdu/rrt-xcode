@@ -15,9 +15,12 @@ using namespace std;
 
 namespace planning {
     Planner::Planner(){
+        Timer t1;
         ParamConfig();
         InitEnv();
         RegisterPlanner();
+        std::cout << "environment init time:" << t1.duration() << endl;
+
     }
     
     
@@ -63,7 +66,7 @@ namespace planning {
     }
     
     void Planner::Run() {
-        auto status = rrt_planner_->Solve(vehicle_state_, env_);
+        auto status = rrt_planner_->MultiThreadSolve(vehicle_state_, env_);
     }
     
     void Planner::RegisterPlanner() {

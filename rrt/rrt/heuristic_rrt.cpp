@@ -21,151 +21,178 @@ namespace planning {
     : rrt_conf_(planning_conf.rrt_conf()), is_init_(true),
     planning_conf_(planning_conf) {
         show_image_ = rrt_conf_.show_image();
+        tree_.reserve(2000);
     }
     
-    PlanningStatus HeuristicRRT::Solve(const VehicleState& vehicle_state,
+    void HeuristicRRT::Init(const VehicleState& vehicle_state,
                                        Environment* environment) {
-        
-        srand(time(0));
-        // Get init state.
         cv::Point2d init;
         environment->GetPixelCoord(vehicle_state.x, vehicle_state.y,
                                    &init.y, &init.x);
-        
-        cv::Mat img_env;
-        cvtColor(environment->DynamicMap(), img_env, COLOR_GRAY2BGR);
-        ImageProc::PlotPoint(img_env, init, Scalar(0, 100, 0), 2);
-        
+        //cv::Mat img_env;
+        //cvtColor(environment->DynamicMap(), img_env, COLOR_GRAY2BGR);
+        //ImageProc::PlotPoint(img_env, init, Scalar(0, 100, 0), 2);
         // Get sampling probablistic map.
         cv::Mat goal_prob       = environment->TargetAttractiveMap();
         cv::Mat voronoi_prob    = environment->VoronoiAttractiveMap();
         cv::Mat attractive_prob = environment->AttractiveMap();
+        probablistic_map_ = ProbablisticMap(attractive_prob);
         
-        ProbablisticMap probablistic_map(attractive_prob);
+        init_node_ = Node(int(init.x), int(init.y), vehicle_state.theta);
+        init_node_.SetIndex(0);
+        init_node_.SetParent(-1);
+        tree_ = {init_node_};
         
-        Node init_node(int(init.x), int(init.y), vehicle_state.theta);
-        init_node.SetIndex(0);
-        init_node.SetParent(-1);
-        
-        std::vector<Node> tree = {init_node};
-        
-        Node goal_node = environment->Goal();
+        goal_node_ = environment->Goal();
         std::cout << "init:" << vehicle_state.x << "," << vehicle_state.y << std::endl;
-        std::cout << "init pixel:" << init_node.row() << ", " << init_node.col() << std::endl;
-        std::cout << "goal pixel:" << goal_node.row() << ", " << goal_node.col() << std::endl;
+        std::cout << "init pixel:" << init_node_.row() << ", " << init_node_.col() << std::endl;
+        std::cout << "goal pixel:" << goal_node_.row() << ", " << goal_node_.col() << std::endl;
         
-        GNAT gnat(rrt_conf_.pivots_k(), cv::Size(512,512));
-        gnat.add(init_node);
+        gnat_ = GNAT(rrt_conf_.pivots_k(), cv::Size(512,512));
+        gnat_.add(init_node_);
+    }
+    
+    PlanningStatus HeuristicRRT::MultiThreadSolve(const VehicleState& vehicle_state,
+                                                  Environment* environment) {
+        Timer t1;
+        srand(time(0));
+        Init(vehicle_state, environment);
+        std::cout << "Init time:" << t1.duration() << std::endl;
         
-        auto start = std::chrono::system_clock::now();
-        double t_sample = 0.0;
-        double t_nearest = 0.0;
-        double t_steer = 0.0;
-        double t_collision = 0.0;
+        Timer t2;
+        std::thread thread1(&HeuristicRRT::Extend, this, environment);
+        std::thread thread2(&HeuristicRRT::Extend, this, environment);
+        thread1.join();
+        thread2.join();
+       
+        std::cout << "shortest_path_length:" << shortest_path_length_/512*20
+            << ", spline: " << shortest_spath_length_/512*20 << std::endl;
+        std::cout << "expand elapsed seconds:" << t2.duration() << "s\n";
         
+        if (min_path_.size()!=0) {
+            std::vector<Node> spline_path = PostProcessing(min_path_, environment);
+            if (rrt_conf_.record())
+                Record(tree_, spline_path, min_path_);
+            if (show_image_) {
+                Plot(environment);
+            }
+        }
+        std::cout << "heuristic rrt elapsed time: " << t1.duration() << endl;
+        return PlanningStatus::OK();
+    }
+    
+    void HeuristicRRT::Plot(Environment* environment) {
+        cv::Mat img_env;
+        cvtColor(environment->DynamicMap(), img_env, COLOR_GRAY2BGR);
+        for (Node node : tree_) {
+            if (node.parent_index() >= 0) {
+                Node parent_node = tree_[node.parent_index()];
+                ImageProc::PlotLine(img_env, node, parent_node,
+                                    Scalar(0,255,0), 1);
+            }
+        }
+        if (min_path_.size() > 0) {
+            ImageProc::PlotPath(img_env, min_path_, Scalar(0,0,255), 2);
+        }
+        cv:imshow("result", img_env);
+        cv::waitKey(0);
+    }
+    
+    void HeuristicRRT::Extend(const Environment* environment) {
         int i = 0;
         while (i <= rrt_conf_.max_attemp()) {
-            if ( i % 100 == 0) {
-                std::cout << "iteration " << i << " times."
-                " shortest_path_length:" << shortest_path_length_/512*20
-                << ", spline: " << shortest_spath_length_/512*20 << std::endl;
-            }
+            //if ( i % 100 == 0) {
+            //    std::cout << "iteration " << i << " times."
+            //    " shortest_path_length:" << shortest_path_length_/512*20
+            //    << ", spline: " << shortest_spath_length_/512*20 << std::endl;
+            //}
             
             // Heuristic sample.
-            auto t1 = std::chrono::system_clock::now();
             Node sample;
             if (rrt_conf_.uniform_sample()) {
                 sample = UniformSample(environment);
             } else {
-                sample = probablistic_map.Sampling();
+                sample = probablistic_map_.Sampling();
             }
-            std::chrono::duration<double> elapsed_seconds =
-            std::chrono::system_clock::now() - t1;
-            t_sample += elapsed_seconds.count();
-            
             // Path prior.
             bool turn_on_prior = rrt_conf_.turn_on_prior();
             if (turn_on_prior) {
-                double max_dist_sample = sqrt(Node::SquareDistance(sample, init_node))
-                + sqrt(Node::SquareDistance(sample, goal_node));
+                double max_dist_sample = sqrt(Node::SquareDistance(sample, init_node_))
+                + sqrt(Node::SquareDistance(sample, goal_node_));
                 if (shortest_path_length_!=0 && max_dist_sample > shortest_path_length_) {
                     continue;
                 }
             }
             
-            t1 = std::chrono::system_clock::now();
-            // Find parent node.
-            Node nearest_node;
-            if (!GetNearestNode(sample, gnat, tree, &nearest_node)) {
+            vector<Node> nearest_nodes;
+            if (!GetNearestNodes(sample, &nearest_nodes)) {
                 continue;
             }
-            elapsed_seconds = std::chrono::system_clock::now() - t1;
-            t_nearest += elapsed_seconds.count();
             
-            
-            // Steer.
-            t1 = std::chrono::system_clock::now();
             Node new_node;
-            if (! Steer(sample, nearest_node, &new_node)) {
+            Node nearest_node;
+            bool success = false;
+            for (Node candidate_node : nearest_nodes) {
+                if (! Steer(sample, candidate_node, &new_node)) {
+                    continue;
+                }
+                if (CheckCollision(candidate_node, new_node, *environment)) {
+                    // Collide.
+                    continue;
+                }
+                nearest_node = candidate_node;
+                success = true;
+                break;
+            }
+            
+            if (!success) {
                 continue;
             }
-            elapsed_seconds = std::chrono::system_clock::now() - t1;
-            t_steer += elapsed_seconds.count();
-            
-            
-            // Check collision.
-            t1 = std::chrono::system_clock::now();
-            if (CheckCollision(nearest_node, new_node, *environment)) {
-                // Collide.
-                continue;
-            }
-            elapsed_seconds = std::chrono::system_clock::now() - t1;
-            t_collision += elapsed_seconds.count();
-            
             
             // Add to tree.
             i++;
-            new_node.SetIndex(tree.size());
+            rrt_mutex.lock();
+            new_node.SetIndex(int(tree_.size()));
             new_node.SetParent(nearest_node.index());
-            tree.push_back(new_node);
-            gnat.add(new_node);
-            if (show_image_) {
-                ImageProc::PlotLine(img_env, new_node, nearest_node,
-                                    Scalar(0,255,0), 1);
-            }
+            tree_.push_back(new_node);
+            gnat_.add(new_node);
+        
             if (CheckTarget(new_node, environment->Goal())) {
-                vector<Node> path = GetPath(tree, new_node);
-                if (show_image_) {
-                    ImageProc::PlotPath(img_env, path, Scalar(0,0,255), 2);
-                }
+                vector<Node> path = GetPath(tree_, new_node);
                 double path_length = PathLength(path);
                 if (shortest_path_length_==0 || shortest_path_length_ > path_length) {
                     std::cout << "A shorter path found!" << std::endl;
                     shortest_path_length_ = path_length;
-                    vector<Node> spath = PostProcessing(path, environment);
-                    shortest_spath_length_ = PathLength(spath);
-                    min_path = path;
+                    //vector<Node> spath = PostProcessing(path, environment);
+                    //shortest_spath_length_ = PathLength(spath);
+                    min_path_ = path;
                 }
             }
+            rrt_mutex.unlock();
         }
+    }
+    
+    PlanningStatus HeuristicRRT::Solve(const VehicleState& vehicle_state,
+                                       Environment* environment) {
+        Timer t_all;
+        srand(time(0));
+        Init(vehicle_state, environment);
+        
+        auto start = std::chrono::system_clock::now();
+        Extend(environment);
         auto end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = end - start;
-        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-        std::cout << "elapsed seconds:" << elapsed_seconds.count() << "s\n";
-        std::cout << "t_sample:" << t_sample << ", t_nearest:" << t_nearest << ", t_steer: "
-        << t_steer << ", t_collision:" << t_collision << endl;
-        if (min_path.size()!=0) {
-            std::vector<Node> spline_path = PostProcessing(min_path, environment);
-            Record(tree, spline_path, min_path);
+        std::cout << "expand elapsed seconds:" << elapsed_seconds.count() << "s\n";
+        
+        if (min_path_.size()!=0) {
+            std::vector<Node> spline_path = PostProcessing(min_path_, environment);
+            if (rrt_conf_.record())
+                Record(tree_, spline_path, min_path_);
             if (show_image_) {
-                ImageProc::PlotPath(img_env, spline_path, Scalar(0,0,255),2);
-                ImageProc::PlotPath(img_env, min_path, Scalar(0,255,0),2);
+                Plot(environment);
             }
         }
-        
-        if (show_image_)
-            imshow("environment", img_env);
-            cv::waitKey(0);
+        std::cout << "heuristic rrt elapsed seconds: " << t_all.duration() << endl;
         return PlanningStatus::OK();
     }
     
@@ -181,18 +208,16 @@ namespace planning {
     }
     
     bool HeuristicRRT::GetNearestNode(const Node& sample,
-                                      GNAT& gnat,
-                                      const std::vector<Node> tree,
                                       Node* nearest_node) {
         
-        vector<Node> k_nearest = gnat.kNearestPoints(sample, 5);
+        vector<Node> k_nearest = gnat_.kNearestPoints(sample, 5);
         bool success = false;
         double dtheta = 0.0;
         for (int i = k_nearest.size()-1; i >=0; --i) {
             Node tmp = k_nearest[i];
             Node parent_tmp;
             if (tmp.parent_index() != -1) {
-                parent_tmp = tree[tmp.parent_index()];
+                parent_tmp = tree_[tmp.parent_index()];
                 dtheta = Node::GetDeltaTheta(parent_tmp, tmp, sample);
                 if (dtheta < M_PI / 3) {
                     continue;
@@ -208,6 +233,30 @@ namespace planning {
             }
         }
         return success;
+    }
+    
+    bool HeuristicRRT::GetNearestNodes(const Node& sample,
+                                      vector<Node>* nearest_nodes) {
+        vector<Node> k_nearest = gnat_.kNearestPoints(sample, 5);
+        nearest_nodes->clear();
+        double dtheta = 0.0;
+        for (int i = k_nearest.size()-1; i >=0; --i) {
+            Node tmp = k_nearest[i];
+            Node parent_tmp;
+            if (tmp.parent_index() != -1) {
+                parent_tmp = tree_[tmp.parent_index()];
+                dtheta = Node::GetDeltaTheta(parent_tmp, tmp, sample);
+                if (dtheta < M_PI / 2) {
+                    continue;
+                } else {
+                    nearest_nodes->push_back(k_nearest[i]);
+                }
+            } else {
+                nearest_nodes->push_back(k_nearest[i]);
+            }
+        }
+        if (nearest_nodes->size() > 0) return true;
+        else return false;
     }
     
     bool HeuristicRRT::Steer(const Node& sample, const Node& nearest,
@@ -269,8 +318,7 @@ namespace planning {
         return length;
     }
     
-    std::vector<Node> HeuristicRRT::PostProcessing(
-                                                   const std::vector<Node>& path,
+    std::vector<Node> HeuristicRRT::PostProcessing(const std::vector<Node>& path,
                                                    const Environment* env) {
         cv::Mat img_env;
         cvtColor(env->DynamicMap(), img_env, COLOR_GRAY2BGR);
@@ -379,7 +427,6 @@ namespace planning {
                 s_error += fabs(l_phi_dx[t]) + fabs(l_phi_dy[t]);
                 p_error += fabs(p_phi_x[t]) + fabs(p_phi_y[t]);
             }
-            double error = s_error + p_error;
             double lambda = rrt_conf_.k_repulsive();
             for (int t = 3; t < size-3; ++t) {
                 x[t] -= 0.01 * (1.2 * l_phi_dx[t] / 512 * 20 - lambda * p_phi_x[t]);
@@ -392,7 +439,6 @@ namespace planning {
         for (int i = 2 ; i < x.size()-3; ++i) {
             spline_path.push_back(Node(x[i], y[i]));
         }
-        
         return spline_path;
     }
     
@@ -412,14 +458,14 @@ namespace planning {
         string time_s;
         //the name of bag file is better to be determined by the system time
         time_s = int2string(now->tm_year + 1900)+
-        '-'+int2string(now->tm_mon + 1)+
-        '-'+int2string(now->tm_mday)+
-        '-'+int2string(now->tm_hour)+
-        '-'+int2string(now->tm_min)+
-        '-'+int2string(now->tm_sec);
+            '-'+int2string(now->tm_mon + 1)+
+            '-'+int2string(now->tm_mday)+
+            '-'+int2string(now->tm_hour)+
+            '-'+int2string(now->tm_min)+
+            '-'+int2string(now->tm_sec);
         
         std::string file_name = rrt_conf_.record_path()
-        + "/tree-" + time_s;
+                                + "/tree-" + time_s;
         if (rrt_conf_.uniform_sample()) {
             file_name += "-uniform-cost_" + std::to_string(shortest_path_length_/512*20) + ".txt";
         } else {

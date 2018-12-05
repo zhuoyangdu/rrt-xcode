@@ -15,5 +15,6 @@
 int main(int argc, const char * argv[]) {
     planning::Planner planner;
     planner.Run();
+    std::cout << "Successed." << std::endl;
     return 0;
 }

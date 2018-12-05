@@ -16,6 +16,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <thread>
 
 #include "../common/planning_status.h"
 #include "../common/environment.h"
@@ -39,7 +40,17 @@ public:
     PlanningStatus Solve(const VehicleState& vehicle_state,
                          Environment* environment);
     
+    PlanningStatus MultiThreadSolve(const VehicleState& vehicle_state,
+                                    Environment* environment);
+    
 private:
+    void Init(const VehicleState& vehicle_state,
+                         Environment* environment);
+    
+    void Extend(const Environment* environment);
+    
+    void Plot(Environment* environment);
+    
     struct Compare {
         Compare(Node sample) {this->sample = sample;}
         bool operator() (Node& a, Node& b) {
@@ -53,9 +64,10 @@ private:
     };
     
     bool GetNearestNode(const Node& sample,
-                        GNAT& gnat,
-                        const std::vector<Node> tree,
                         Node* nearest_node);
+    
+    bool GetNearestNodes(const Node& sample,
+                                       vector<Node>* nearest_nodes);
     
     bool CheckCollision(const Node& a, const Node& b, const Environment& env);
     
@@ -82,7 +94,16 @@ private:
     bool show_image_ = false;
     double shortest_path_length_ = 0;
     double shortest_spath_length_ = 0;
-    std::vector<Node> min_path;
+    std::vector<Node> min_path_;
+    
+    ProbablisticMap probablistic_map_;
+    std::vector<Node> tree_;
+    Node init_node_;
+    Node goal_node_;
+    GNAT gnat_;
+    
+    std::mutex rrt_mutex;
+    
 };
 
 }  // namespace planning

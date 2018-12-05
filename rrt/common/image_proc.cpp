@@ -12,6 +12,34 @@ using namespace std;
 using namespace cv;
 
 namespace planning {
+    
+    // Draw delaunay triangles
+    void ImageProc::DrawDelaunay(Mat& img, Subdiv2D& subdiv, Scalar delaunay_color)
+    {
+        
+        vector<Vec6f> triangleList;
+        subdiv.getTriangleList(triangleList);
+        vector<Point> pt(3);
+        Size size = img.size();
+        Rect rect(0,0, size.width, size.height);
+        
+        for( size_t i = 0; i < triangleList.size(); i++ )
+        {
+            Vec6f t = triangleList[i];
+            pt[0] = Point(cvRound(t[0]), cvRound(t[1]));
+            pt[1] = Point(cvRound(t[2]), cvRound(t[3]));
+            pt[2] = Point(cvRound(t[4]), cvRound(t[5]));
+            
+            // Draw rectangles completely inside the image.
+            if ( rect.contains(pt[0]) && rect.contains(pt[1]) && rect.contains(pt[2]))
+            {
+                line(img, pt[0], pt[1], delaunay_color, 1, CV_AA, 0);
+                line(img, pt[1], pt[2], delaunay_color, 1, CV_AA, 0);
+                line(img, pt[2], pt[0], delaunay_color, 1, CV_AA, 0);
+            }
+        }
+    }
+    
     void ImageProc::PlotPoint(const cv::Mat& image,
                               const Point& point,
                               const cv::Scalar& scalar,
@@ -59,7 +87,6 @@ namespace planning {
         vector<Vec4i> hierarchy;
         cv::findContours(image, contours, hierarchy,
                          RETR_TREE, CV_CHAIN_APPROX_NONE);
-        
         vector<Point> vertex;
         for (vector<Point> contour : contours) {
             for (int i = 0; i < contour.size(); i = i+2) {
@@ -68,6 +95,7 @@ namespace planning {
         }
         return vertex;
     }
+
     
     cv::Mat ImageProc::GetVoronoiProbMap(const cv::Mat& image) {
         // Get the vertex point of the image.
@@ -84,19 +112,19 @@ namespace planning {
         vector<Point2f> centers;
         subdiv.getVoronoiFacetList(vector<int>(), facets, centers);
         Mat img_vor(image.rows, image.cols, CV_8UC1, Scalar(255));
-        vector<Point2f> circle_center;
         for (vector<Point2f> p1 : facets) {
-            for (Point2f p2 : p1) {
-                if (p2.x > 511 || p2.x < 0 || p2.y > 511 || p2.y < 0) {
-                    continue;
-                }
-                int value = static_cast<int>(image.at<uchar>(p2));
-                if (value > 0) {
-                    circle(img_vor, p2, 3, Scalar(0), CV_FILLED, CV_AA, 0);
+            for (int k = 0; k < p1.size()-1; ++k) {
+                int value1 = static_cast<int>(image.at<uchar>(p1[k]));
+                int value2 = static_cast<int>(image.at<uchar>(p1[k+1]));
+                if (value2 > 0 && value1 > 0 &&
+                    p1[k].x > 0 && p1[k].x < 511 &&
+                    p1[k].y > 0 && p1[k].y < 511 &&
+                    p1[k+1].x > 0 && p1[k+1].x < 511 &&
+                    p1[k+1].y > 0 && p1[k+1].y < 511) {
+                    line(img_vor, p1[k], p1[k+1], Scalar(0), 3);
                 } else {
                     continue;
                 }
-                circle_center.push_back(p2);
             }
         }
         
@@ -126,10 +154,11 @@ namespace planning {
                 static_cast<int>(filter_image.at<uchar>(i, j) * 255 / max);
             }
         }
+        /*
         cv::minMaxIdx(voronoi_prob, &min, &max);
         std::cout << "GetVoronoiProbMap : min:" << min
         << ", max:" << max << std::endl;
-        
+        */
         return voronoi_prob;
     }
     
@@ -143,10 +172,13 @@ namespace planning {
                                          + (goal.y - j) * (goal.y - j))) + 1));
             }
         }
+        /*
         double min, max;
         cv::minMaxIdx(goal_prob, &min, &max);
         std::cout << "GetTargetAttractiveMap: min:"
         << min << ", max:" << max << std::endl;
+         */
+        
         return  goal_prob;
     }
     
@@ -178,10 +210,10 @@ namespace planning {
                 int(attractive_prob_double.at<double>(i, j) / max_prob * 255);
             }
         }
-        double min, max;
-        cv::minMaxIdx(attractive_prob, &min, &max);
-        std::cout << "GetAttractiveProbMap: min:"
-        << min << ", max:" << max << std::endl;
+        // double min, max;
+        // cv::minMaxIdx(attractive_prob, &min, &max);
+        // std::cout << "GetAttractiveProbMap: min:"
+        // << min << ", max:" << max << std::endl;
         
         // Remove collision.
         for (int i = 0; i < attractive_prob.rows; ++i) {
@@ -194,16 +226,35 @@ namespace planning {
         *attractive_prob_map = attractive_prob;
     }
     
+    std::vector<Point> ImageProc::PaintVertex(const cv::Mat &origin_image,
+                                              cv::Mat* image) {
+        vector<vector<Point>> contours;
+        vector<Vec4i> hierarchy;
+        cv::findContours(origin_image, contours, hierarchy,
+                         RETR_TREE, CV_CHAIN_APPROX_NONE);
+        vector<Point> vertex;
+        for (vector<Point> contour : contours) {
+            for (int i = 0; i < contour.size(); i = i+2) {
+                vertex.push_back(contour[i]);
+            }
+        }
+        for (int i = 0; i < contours.size(); ++i) {
+            cv::drawContours(*image, contours, i, Scalar(255), 2);
+        }
+        return vertex;
+    }
+    
     void ImageProc::GetObstacleRepulsiveField(const cv::Mat& image,
                                               cv::Mat* repulsive_filed_x,
                                               cv::Mat* repulsive_filed_y) {
-        std::vector<cv::Point> vertex = GetVertex(image);
         cv::Mat img_cont = cv::Mat::zeros(image.rows, image.cols, CV_8UC1);
+        std::vector<cv::Point> vertex = PaintVertex(image, &img_cont);
+
         for (cv::Point p : vertex) {
+            //cout << "vertex:" << p.x << "," << p.y << endl;
             PlotPoint(img_cont, p, Scalar(255), 2);
         }
-        // imshow("contours", img_cont);
-        
+
         int kern_dim = 50;
         cv::Mat kern_x = cv::Mat::zeros(kern_dim*2+1, kern_dim*2+1, CV_64F);
         cv::Mat kern_y = cv::Mat::zeros(kern_dim*2+1, kern_dim*2+1, CV_64F);
@@ -235,6 +286,7 @@ namespace planning {
                 }
             }
         }
+        /*
         double min, max;
         cv::minMaxIdx(*repulsive_filed_x , &min, &max);
         std::cout << "repulsive_filed_x: min:"
@@ -243,7 +295,7 @@ namespace planning {
         cv::minMaxIdx(*repulsive_filed_y , &min, &max);
         std::cout << "repulsive_filed_y: min:"
         << min << ", max:" << max << std::endl;
-        
+        */
     }
 
 }  // namespace planning

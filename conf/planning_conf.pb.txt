@@ -4,12 +4,12 @@ rrt_conf {
     time_step : 0.5
     k_voronoi : 1.0
     k_goal : 5.0
-    max_attemp: 2000
+    max_attemp: 1000
     step_size: 15
     turn_on_prior: true
     k_repulsive: 0.4
-    post_iteration: 200
-    record: true
+    post_iteration: 50
+    record: false
     record_path: "/Users/zhuoyang/Documents/du/origin_data/1025/"
     uniform_sample: false
     pivots_k: 12

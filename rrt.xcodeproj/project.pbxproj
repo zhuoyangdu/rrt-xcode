@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5C78B204219ACFE100B75944 /* gnat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C78B203219ACFE100B75944 /* gnat.cpp */; };
 		5CB4769D21805A680057AFE6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4769C21805A680057AFE6 /* main.cpp */; };
 		5CB476CE21805B0F0057AFE6 /* libopencv_line_descriptor.3.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CB476A421805B090057AFE6 /* libopencv_line_descriptor.3.4.0.dylib */; };
 		5CB476CF21805B0F0057AFE6 /* libopencv_videoio.3.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CB476A521805B090057AFE6 /* libopencv_videoio.3.4.0.dylib */; };
@@ -59,7 +60,6 @@
 		5CB4772521808F580057AFE6 /* environment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4772321808F580057AFE6 /* environment.cpp */; };
 		5CB4772921808FCE0057AFE6 /* probablistic_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4772721808FCE0057AFE6 /* probablistic_map.cpp */; };
 		5CB4772E218187790057AFE6 /* planning_conf.pb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4772D218187790057AFE6 /* planning_conf.pb.cc */; };
-		5CB4B122218AE63100433D76 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CB4B121218AE63100433D76 /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -99,6 +99,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5C78B203219ACFE100B75944 /* gnat.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gnat.cpp; sourceTree = "<group>"; };
+		5C78B205219AFAC600B75944 /* timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = timer.h; sourceTree = "<group>"; };
 		5CB4769921805A680057AFE6 /* rrt */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = rrt; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CB4769C21805A680057AFE6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = rrt/main.cpp; sourceTree = SOURCE_ROOT; };
 		5CB476A421805B090057AFE6 /* libopencv_line_descriptor.3.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencv_line_descriptor.3.4.0.dylib; sourceTree = "<group>"; };
@@ -154,19 +156,18 @@
 		5CB4771B21808D9F0057AFE6 /* image_proc.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = image_proc.cpp; sourceTree = "<group>"; };
 		5CB4771C21808D9F0057AFE6 /* image_proc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = image_proc.h; sourceTree = "<group>"; };
 		5CB4771E21808E2F0057AFE6 /* node.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = node.h; sourceTree = "<group>"; };
-		5CB4771F21808EB50057AFE6 /* heuristic_rrt.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = heuristic_rrt.cpp; sourceTree = "<group>"; };
+		5CB4771F21808EB50057AFE6 /* heuristic_rrt.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = heuristic_rrt.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		5CB4772021808EB50057AFE6 /* heuristic_rrt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = heuristic_rrt.h; sourceTree = "<group>"; };
 		5CB4772221808F090057AFE6 /* planning_status.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = planning_status.h; sourceTree = "<group>"; };
 		5CB4772321808F580057AFE6 /* environment.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = environment.cpp; sourceTree = "<group>"; };
 		5CB4772421808F580057AFE6 /* environment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = environment.h; sourceTree = "<group>"; };
-		5CB4772621808FA20057AFE6 /* gnat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gnat.h; sourceTree = "<group>"; };
+		5CB4772621808FA20057AFE6 /* gnat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gnat.h; sourceTree = "<group>"; tabWidth = 4; };
 		5CB4772721808FCE0057AFE6 /* probablistic_map.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = probablistic_map.cpp; path = rrt/rrt/probablistic_map.cpp; sourceTree = SOURCE_ROOT; };
 		5CB4772821808FCE0057AFE6 /* probablistic_map.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = probablistic_map.h; path = rrt/rrt/probablistic_map.h; sourceTree = SOURCE_ROOT; };
 		5CB4772B218090620057AFE6 /* map */ = {isa = PBXFileReference; lastKnownFileType = folder; path = map; sourceTree = "<group>"; };
 		5CB4772C218187790057AFE6 /* planning_conf.pb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = planning_conf.pb.h; sourceTree = "<group>"; };
 		5CB4772D218187790057AFE6 /* planning_conf.pb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = planning_conf.pb.cc; sourceTree = "<group>"; };
 		5CB4B11F218AE63100433D76 /* multi-thread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "multi-thread"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5CB4B121218AE63100433D76 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -240,7 +241,6 @@
 				5CB476F821805B460057AFE6 /* proto */,
 				5CB476A321805AF80057AFE6 /* opencv_frameworks */,
 				5CB4769B21805A680057AFE6 /* rrt */,
-				5CB4B120218AE63100433D76 /* multi-thread */,
 				5CB4769A21805A680057AFE6 /* Products */,
 				5CB4770C218083640057AFE6 /* Frameworks */,
 			);
@@ -353,6 +353,7 @@
 				5CB4771B21808D9F0057AFE6 /* image_proc.cpp */,
 				5CB4771C21808D9F0057AFE6 /* image_proc.h */,
 				5CB4772221808F090057AFE6 /* planning_status.h */,
+				5C78B205219AFAC600B75944 /* timer.h */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -366,6 +367,7 @@
 				5CB4772021808EB50057AFE6 /* heuristic_rrt.h */,
 				5CB4772721808FCE0057AFE6 /* probablistic_map.cpp */,
 				5CB4772821808FCE0057AFE6 /* probablistic_map.h */,
+				5C78B203219ACFE100B75944 /* gnat.cpp */,
 			);
 			path = rrt;
 			sourceTree = "<group>";
@@ -376,14 +378,6 @@
 				5CB4772B218090620057AFE6 /* map */,
 			);
 			path = resources;
-			sourceTree = "<group>";
-		};
-		5CB4B120218AE63100433D76 /* multi-thread */ = {
-			isa = PBXGroup;
-			children = (
-				5CB4B121218AE63100433D76 /* main.cpp */,
-			);
-			path = "multi-thread";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -467,6 +461,7 @@
 				5CB4769D21805A680057AFE6 /* main.cpp in Sources */,
 				5CB4772521808F580057AFE6 /* environment.cpp in Sources */,
 				5CB4772921808FCE0057AFE6 /* probablistic_map.cpp in Sources */,
+				5C78B204219ACFE100B75944 /* gnat.cpp in Sources */,
 				5CB4771D21808D9F0057AFE6 /* image_proc.cpp in Sources */,
 				5CB4772E218187790057AFE6 /* planning_conf.pb.cc in Sources */,
 				5CB4772121808EB50057AFE6 /* heuristic_rrt.cpp in Sources */,
@@ -478,7 +473,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5CB4B122218AE63100433D76 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
